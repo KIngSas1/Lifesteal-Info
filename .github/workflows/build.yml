@@ -27,11 +27,12 @@ jobs:
             n="${z%.zip}"
             mkdir -p "work/$n"
             unzip -q -o "$z" -d "work/$n"
-            (cd "work/$n" && gradle build --no-daemon)
-            for f in work/$n/build/libs/*.jar; do
-              case "$f" in *-sources.jar) ;; *) cp "$f" dist/ ;; esac
-            done
+            gradle_file=$(find "work/$n" -name settings.gradle | head -n 1)
+            dir=$(dirname "$gradle_file")
+            (cd "$dir" && gradle build --no-daemon)
           done
+          find work -name '*.jar'
+          find work -path '*/build/libs/*.jar' ! -name '*-sources.jar' -exec cp {} dist/ \;
           ls -l dist
 
       - uses: actions/upload-artifact@v4
